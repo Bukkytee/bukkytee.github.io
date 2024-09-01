@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import 'react-pro-sidebar/dist/css/styles.css';
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
-import {Link} from "react-router-dom";
+import {Link, useLocation} from "react-router-dom";
 import { tokens } from "../../theme";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
@@ -34,16 +34,52 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
 }
 
 
-const Sidebar = () => {
+const Sidebar = ({ isCollapsed, onCollapseToggle }) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
-    const [isCollapsed, setIsCollapsed] = useState(false);
-    const [selected, setSelected] = useState("Dashboard");
+    const location = useLocation();
+    const [selected, setSelected] = useState("");
+
+    useEffect(() => {
+        switch(location.pathname) {
+            case "/":
+                setSelected("Dashboard");
+                break;
+            case "/sales":
+                setSelected("Sales");
+                break;
+            case "/expenses":
+                setSelected("Expenses");
+                break;
+            case "/users":
+                setSelected("Users");
+                break;
+            case "/profile":
+                setSelected("Profile");
+                break;
+            case "/customers":
+                setSelected("Customers");
+                break;
+            case "/analytics":
+                setSelected("Analytics");
+                break;
+            case "/pie":
+                setSelected("Pie Chart");
+                break;
+            case "/line":
+                setSelected("Line Chart");
+                break;
+            default:
+                setSelected("");
+                break;
+        }
+    }, [location.pathname]);
     return (
         <Box
             sx={{
                 "& .pro-sidebar-inner": {
                     background: `${colors.primary[400]} !important`,
+                    transition: "all 0.3s ease-in-out"
                 },
                 "& .pro-icon-wrapper": {
                     backgroundColor: "transparent !important",
@@ -65,11 +101,12 @@ const Sidebar = () => {
             style={{
                 position: "fixed",
                 height: "100vh",
+                transition: "all 0.3s ease-in-out",
             }}>
                 <Menu iconShape="square">
                     {/* LOGO AND MENU ICON */}
                     <MenuItem
-                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        onClick={onCollapseToggle}
                         icon={isCollapsed ? <MenuOutlinedIcon/> : undefined}
                         style={{
                             margin: "10px 0 20px 0",
@@ -84,7 +121,7 @@ const Sidebar = () => {
                                 ml="15px"
                             >
                                 <Typography variant="h3" color={colors.gray[100]}>Menu</Typography>
-                                <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
+                                <IconButton onClick={onCollapseToggle}>
                                     <MenuOutlinedIcon/>
                                 </IconButton>
                             </Box>
