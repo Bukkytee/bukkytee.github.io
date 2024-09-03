@@ -38,6 +38,9 @@ function App() {
             flexGrow={1}
             overflow="hidden"
             transition= "width 0.3s ease-in-out"
+            sx={{
+              scale: "0.99"
+            }}
           >
             <main className="content">
               <Topbar />

@@ -4,7 +4,7 @@ import { Typography, Button } from "@mui/material";
 import { useTheme } from "@mui/material";
 import { tokens } from "../theme";
 
-const DeleteDialog =  ({ open, onClose, onConfirm, isBulkDelete = false }) => {
+const SalesDeleteDialog =  ({ open, onClose, onConfirm, isBulkDelete = false }) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     return (
@@ -50,4 +50,4 @@ const DeleteDialog =  ({ open, onClose, onConfirm, isBulkDelete = false }) => {
     );
 };
 
-export default DeleteDialog;
+export default SalesDeleteDialog;
