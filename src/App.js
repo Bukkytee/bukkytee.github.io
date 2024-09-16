@@ -10,7 +10,7 @@ import Expenses from "./pages/expenses";
 import Users from "./pages/users";
 import Profile from "./pages/profile";
 import Customers from "./pages/customers";
-// import Inventory from "./pages/inventory";
+import Inventory from "./pages/inventory";
 import Analytics from "./pages/analytics";
 import Pie from "./pages/pie";
 import Line from "./pages/line";
@@ -51,7 +51,7 @@ function App() {
                 <Route path="/users" element={<Users />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/customers" element={<Customers />} />
-                {/* <Route path="/inventory" element={<Inventory />} /> */}
+                <Route path="/inventory" element={<Inventory />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/pie" element={<Pie />} />
                 <Route path="/line" element={<Line />} />

@@ -3,10 +3,8 @@ import { tokens } from "../../theme";
 import Header from "../../components/Header";
 import { mockTransactions } from "../../data/mockData";
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
-import EmailIcon from "@mui/icons-material/Email";
 import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import TrafficIcon from "@mui/icons-material/Traffic";
 import LineChart from "../../components/LineChart";
 import BarChart from "../../components/BarChart";
 import PieChart from "../../components/PieChart";
@@ -14,12 +12,86 @@ import StatBox from "../../components/StatBox";
 import ProgressCircle from "../../components/ProgressCircle";
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-
+import { useState, useEffect } from "react";
+import { getTotalMonthlySales, getRecentTransactions } from "../../services/SaleService";
+import { getTotalMonthlyExpenses } from "../../services/ExpenseService";
+import { getCementTotalOutQuantity } from "../../services/CementService";
+import { getBlock1TotalOutQuantity } from "../../services/Block1Service";
+import { getBlock2TotalOutQuantity } from "../../services/Block2Service";
 
 
 const Dashboard = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
+
+    const [ monthlySales, setMonthlySales ] = useState(0);
+    const [ monthlyExpenses, setMonthlyExpenses ] = useState(0);
+    const [ loading, setLoading ] = useState(true);
+    const [ totalOutQuantity, setTotalOutQuantity ] = useState(0);
+    const [ recentTransactions, setRecentTransactions ] = useState([]);
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+
+    useEffect(() => {
+      const fetchMonthlySales = async () => {
+        try {
+          const response = await getTotalMonthlySales(currentMonth, currentYear);
+          setMonthlySales(response.data)
+        } catch (error) {
+          console.error("Error fetching monthly data: ", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchMonthlySales();
+    }, [currentMonth, currentYear]);
+
+    useEffect(() => {
+      const fetchMonthlyExpenses = async () => {
+        try {
+          const response = await getTotalMonthlyExpenses(currentMonth, currentYear);
+          setMonthlyExpenses(response.data)
+        } catch (error) {
+          console.error("Error fetching monthly data: ", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchMonthlyExpenses();
+    }, [currentMonth, currentYear]);
+
+    useEffect(() => {
+      const fetchTotalOutQuantities = async () => {
+        try {
+          const cementResponse = await getCementTotalOutQuantity();
+          const block1Response = await getBlock1TotalOutQuantity();
+          const block2Response = await getBlock2TotalOutQuantity();
+
+          const combinedTotal = (cementResponse.data || 0) + (block1Response.data || 0) + (block2Response.data || 0);
+          setTotalOutQuantity(combinedTotal);
+
+        } catch (error) {
+          console.error("Error fetching total out quantities: ", error);
+          
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchTotalOutQuantities();
+    }, []);
+
+    useEffect(() => {
+      const fetchRecentTransactions = async () => {
+        try {
+          const response = await getRecentTransactions(0, 5);
+          setRecentTransactions(response.data);
+        } catch (error) {
+          console.error("Error fetching recent transactions: ", error); 
+        }
+      };
+      fetchRecentTransactions();
+    }, []);
+
   
     return (
       <Box m="-5px" sx={{scale: "0.97"}}>
@@ -53,14 +125,14 @@ const Dashboard = () => {
         >
           {/* ROW 1 */}
           <Box
-            gridColumn="span 3"
+            gridColumn="span 4"
             backgroundColor={colors.primary[400]}
             display="flex"
             alignItems="center"
             justifyContent="center"
           >
             <StatBox
-              title="12K"
+              title={loading ? "Loading..." : `${totalOutQuantity.toLocaleString()}`}
               subtitle="Inventory Distributed"
               progress="0.75"
               increase="+14%"
@@ -72,14 +144,14 @@ const Dashboard = () => {
             />
           </Box>
           <Box
-            gridColumn="span 3"
+            gridColumn="span 4"
             backgroundColor={colors.primary[400]}
             display="flex"
             alignItems="center"
             justifyContent="center"
           >
             <StatBox
-              title="N4M+"
+              title={loading ? "Loading..." : `₦${monthlySales.toLocaleString()}`}
               subtitle="Total Monthly Sales"
               progress="0.50"
               increase="+21%"
@@ -90,7 +162,7 @@ const Dashboard = () => {
               }
             />
           </Box>
-          <Box
+          {/* <Box
             gridColumn="span 3"
             backgroundColor={colors.primary[400]}
             display="flex"
@@ -108,16 +180,16 @@ const Dashboard = () => {
                 />
               }
             />
-          </Box>
+          </Box> */}
           <Box
-            gridColumn="span 3"
+            gridColumn="span 4"
             backgroundColor={colors.primary[400]}
             display="flex"
             alignItems="center"
             justifyContent="center"
           >
             <StatBox
-              title="N1.3M+"
+              title={loading ? "Loading..." : `₦${monthlyExpenses.toLocaleString()}`}
               subtitle="Total Monthly Expenses"
               progress="0.80"
               increase="+43%"
@@ -185,12 +257,12 @@ const Dashboard = () => {
               p="15px"
             >
               <Typography color={colors.gray[100]} variant="h5" fontWeight="600">
-                Recent Transactions
+                Recent Sales Transactions
               </Typography>
             </Box>
-            {mockTransactions.map((transaction, i) => (
+            {recentTransactions.map((transaction, i) => (
               <Box
-                key={`${transaction.txId}-${i}`}
+                key={`${transaction.id}-${i}`}
                 display="flex"
                 justifyContent="space-between"
                 alignItems="center"
@@ -203,7 +275,7 @@ const Dashboard = () => {
                     variant="h5"
                     fontWeight="600"
                   >
-                    {transaction.txId}
+                    {transaction.id}
                   </Typography>
                   <Typography color={colors.gray[100]}>
                     {transaction.user}
@@ -211,18 +283,18 @@ const Dashboard = () => {
                 </Box>
                 <Box color={colors.gray[100]}>{transaction.date}</Box>
                 <Box
-                  backgroundColor={colors.greenAccent[600]}
+                  backgroundColor={colors.greenAccent[700]}
                   p="5px 10px"
                   borderRadius="4px"
                 >
-                  ₦{transaction.cost}
+                  ₦{transaction.totalBalance.toLocaleString()}
                 </Box>
               </Box>
             ))}
           </Box>
   
           {/* ROW 3 */}
-          <Box
+          {/* <Box
             gridColumn="span 4"
             gridRow="span 2"
             backgroundColor={colors.primary[400]}
@@ -247,9 +319,9 @@ const Dashboard = () => {
               </Typography>
               <Typography>Includes extra misc expenditures and costs</Typography>
             </Box>
-          </Box>
+          </Box> */}
           <Box
-            gridColumn="span 4"
+            gridColumn="span 6"
             gridRow="span 2"
             backgroundColor={colors.primary[400]}
           >
@@ -265,7 +337,7 @@ const Dashboard = () => {
             </Box>
           </Box>
           <Box
-            gridColumn="span 4"
+            gridColumn="span 6"
             gridRow="span 2"
             backgroundColor={colors.primary[400]}
           >

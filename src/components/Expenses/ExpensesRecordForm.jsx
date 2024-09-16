@@ -1,9 +1,9 @@
 import React from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, TextField } from "@mui/material";
 import { useTheme } from "@mui/material";
-import { tokens } from "../theme";
+import { tokens } from "../../theme";
 import { Formik } from "formik";
-import { createExpensesRecord, updateExpensesRecord } from "../services/ExpenseService";
+import { createExpensesRecord, updateExpensesRecord } from "../../services/ExpenseService";
 
 // TODO: Validation Schema
 

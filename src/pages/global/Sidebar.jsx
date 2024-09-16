@@ -60,6 +60,9 @@ const Sidebar = ({ isCollapsed, onCollapseToggle }) => {
             case "/customers":
                 setSelected("Customers");
                 break;
+            case "/inventory":
+                setSelected("Inventory");
+                break;
             case "/analytics":
                 setSelected("Analytics");
                 break;

@@ -1,30 +1,28 @@
-import { Box, Button, useTheme, Typography } from "@mui/material";
+import { Box, Button, useTheme } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import React, { useEffect, useState } from "react";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
-import Header from "../../components/Header";
-import {
-  listExpensesRecord,
-  getTotalBalanceSum,
-  getExpensesRecord,
-  deleteExpensesRecord,
-  deleteAllExpensesRecords,
-} from "../../services/ExpenseService";
-import ExpensesRecordForm from "../../components/Expenses/ExpensesRecordForm";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import ExpensesDeleteDialog from "../../components/Expenses/ExpensesDeleteDialog";
+import {
+  listBlock1Entries,
+  getBlock1Entry,
+  deleteBlock1Entry,
+  deleteAllBlock1Entries,
+  updateBlock1Entry
+} from "../../services/Block1Service";
+import Block1Form from "./Block1Form";
+import Block1DeleteDialog from "./Block1DeleteDialog";
 
-const Expenses = () => {
+const Block1 = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [rows, setRows] = useState([]);
   const [open, setOpen] = useState(false);
-  const [totalBalanceSum, setTotalBalanceSum] = useState(0);
-  const [editRecord, setEditRecord] = useState(null);
+  const [editBlock1Entry, setEditBlock1Entry] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
-  const [deleteRecord, setDeleteRecord] = useState(null);
+  const [deleteBlock1, setDeleteBlock1] = useState(null);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
 
   const handleClickOpen = () => {
@@ -33,11 +31,11 @@ const Expenses = () => {
 
   const handleClose = () => {
     setOpen(false);
-    setEditRecord(null);
+    setEditBlock1Entry(null);
   };
 
   const handleOpenDialog = (id = null) => {
-    setDeleteRecord(id);
+    setDeleteBlock1(id);
     setIsBulkDelete(id === null);
     setOpenDialog(true);
   };
@@ -47,116 +45,99 @@ const Expenses = () => {
   };
 
   useEffect(() => {
-    listExpensesRecord()
+    listBlock1Entries()
       .then((response) => {
         const data = response.data.map((item) => ({
           id: item.id,
           ...item,
         }));
         setRows(data);
-
-        getTotalBalanceSum()
-          .then((response) => {
-            setTotalBalanceSum(response.data);
-          })
-          .catch((error) => {
-            console.error("Error fetching total balance sum: ", error);
-          });
       })
       .catch((error) => {
         console.error("Error fetching data: ", error);
       });
   }, []);
 
-  const handleAddRecord = (newExpensesRecord) => {
+  const handleAddBlock1Entry = (newBlock1Entry) => {
     setRows((prevRows) => {
-      const updatedRows = [...prevRows, newExpensesRecord];
-
-      getTotalBalanceSum()
-        .then((response) => {
-          setTotalBalanceSum(response.data);
-        })
-        .catch((error) => {
-          console.error("Error fetching total balance sum: ", error);
-        });
+      const updatedRows = [...prevRows, newBlock1Entry];
       return updatedRows;
     });
   };
 
-  const handleEditRecord = (row) => {
-    getExpensesRecord(row.id)
+  const handleEditBlock1Entry = (row) => {
+    getBlock1Entry(row.id)
       .then((response) => {
-        setEditRecord(response.data);
+        setEditBlock1Entry(response.data);
         setOpen(true);
       })
       .catch((error) => {
-        console.error("Error fetching record by ID: ", error);
+        console.error("Error fetching block by ID: ", error);
       });
   };
 
-  const handleDeleteRecord = () => {
-    if (isBulkDelete) {
-      deleteAllExpensesRecords()
-        .then(() => {
-          setRows([]);
-          setTotalBalanceSum(0);
-          setOpenDialog(false);
-        })
-        .catch((error) => {
-          console.error("Error deleting all records: ", error);
-        });
-    } else if (deleteRecord) {
-      deleteExpensesRecord(deleteRecord)
-        .then(() => {
-          setRows((prevRows) =>
-            prevRows.filter((row) => row.id !== deleteRecord)
-          );
-          getTotalBalanceSum()
-            .then((response) => {
-              setTotalBalanceSum(response.data);
-            })
-            .catch((error) => {
-              console.error("Error fetching total balance sum: ", error);
-            });
-          setDeleteRecord(null);
-          setOpenDialog(false);
-        })
-        .catch((error) => {
-          console.error("Error deleting record: ", error);
-        });
-    }
+  const handleBlock1EntryEdited = (updatedBlock1Entry) => {
+    updateBlock1Entry(updatedBlock1Entry.id, updatedBlock1Entry).then(() => {
+      listBlock1Entries().then((response) => {
+        const updatedRows = response.data.map((item) => ({
+          id: item.id,
+          ...item,
+        }));
+        setRows(updatedRows);
+      })
+      .catch((error) => {
+        console.error("Error fetching updated data: ", error); 
+       });
+    })
+   .catch((error) => {
+    console.error("Error updating block entry: ", error); 
+   })
   };
 
-  const handleRecordEdited = (updatedRecord) => {
-    setRows((prevRows) => {
-      const updatedRows = prevRows.map((record) =>
-        record.id === updatedRecord.id
-          ? { ...record, ...updatedRecord }
-          : record
-      );
-
-      getTotalBalanceSum()
-        .then((response) => {
-          setTotalBalanceSum(response.data);
+  const handleDeleteBlock1Entry = () => {
+    if (isBulkDelete) {
+      deleteAllBlock1Entries()
+        .then(() => {
+          setRows([]);
+          setOpenDialog(false);
         })
         .catch((error) => {
-          console.error("Error fetching total balance sum: ", error);
+          console.error("Error deleting all block1 entries: ", error);
+        });
+    } else if (deleteBlock1) {
+      deleteBlock1Entry(deleteBlock1)
+      .then(() => {
+        listBlock1Entries().then((response) => {
+          const data = response.data.map((item) => ({
+            id: item.id,
+            ...item,
+          }));
+          setRows(data);
+        })
+        .catch((error) => {
+          console.error("Error fetching updated block1 entries: ", error); 
         });
 
-      console.log(updatedRecord);
-      return updatedRows;
-    });
+        setDeleteBlock1(null);
+        setOpenDialog(false);
+      })
+      .catch((error) => {
+        console.error("Error deleting block1 entry: ", error);
+      });
+    }
   };
 
   const columns = [
     { field: "id", headerName: "ID", flex: 0.5 },
-    { field: "type", headerName: "Type", flex: 0.5 },
-    { field: "quantity", headerName: "Quantity", flex: 0.5 },
-    { field: "cost", headerName: "Cost", flex: 0.5 },
-    { field: "expensesDesc", headerName: "Description", flex: 1 },
-    { field: "supplierName", headerName: "Supplier", flex: 0.5 },
     { field: "date", headerName: "Date", flex: 0.5 },
-    { field: "totalBalance", headerName: "Total Balance", flex: 0.75 },
+    { field: "description", headerName: "Description", flex: 1 },
+    { field: "inQuantity", headerName: "In", flex: 0.5 },
+    { field: "outQuantity", headerName: "Out", flex: 0.5 },
+    {
+      field: "currentStock",
+      headerName: "Balance (Current Stock)",
+      flex: 0.75,
+    },
     {
       field: "actions",
       headerName: "Actions",
@@ -174,7 +155,7 @@ const Expenses = () => {
                 color: colors.greenAccent[300],
               },
             }}
-            onClick={() => handleEditRecord(params.row)}
+            onClick={() => handleEditBlock1Entry(params.row)}
           >
             <EditOutlinedIcon sx={{ mr: "10px" }} /> Edit
           </Button>
@@ -199,7 +180,7 @@ const Expenses = () => {
   ];
 
   return (
-    <Box m="20px">
+    <Box m="20px 10px" display="flex" flexDirection="column">
       <Box>
         <Button
           sx={{
@@ -217,7 +198,7 @@ const Expenses = () => {
           onClick={handleClickOpen}
         >
           <AddOutlinedIcon sx={{ mr: "10px" }} />
-          Add Record
+          Add Entry
         </Button>
 
         <Button
@@ -236,19 +217,19 @@ const Expenses = () => {
           onClick={() => handleOpenDialog(null)}
         >
           <DeleteOutlinedIcon sx={{ mr: "10px" }} />
-          Delete All Records
+          Delete All Entries
         </Button>
-        <ExpensesRecordForm
+
+        <Block1Form
           open={open}
           handleClose={handleClose}
-          onRecordAdded={handleAddRecord}
-          editRecord={editRecord}
-          onRecordEdited={handleRecordEdited}
+          onBlock1EntryAdded={handleAddBlock1Entry}
+          editBlock1Entry={editBlock1Entry}
+          onBlock1EntryEdited={handleBlock1EntryEdited}
         />
       </Box>
-      <Header title="EXPENSES" subtitle="Expenses transactions listed here" />
       <Box
-        m="40px 0 0 0"
+        m="20px 0 0 0"
         height="70vh"
         sx={{
           "& .MuiDataGrid-root": {
@@ -280,7 +261,6 @@ const Expenses = () => {
           "& .MuiCheckbox-root": {
             color: `${colors.greenAccent[100]} !important`,
           },
-
           "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
             color: `${colors.gray[100]} !important`,
             margin: "0 20px 20px 0",
@@ -288,31 +268,17 @@ const Expenses = () => {
           },
         }}
       >
-        <DataGrid 
-          rows={rows}
-          columns={columns}
-          autoHeight
-          slots={{ 
-            toolbar: GridToolbar,
-          }}
-           />
+        <DataGrid rows={rows} columns={columns} autoHeight slots={{ toolbar: GridToolbar }}/>
       </Box>
 
-      <Box display="flex" justifyContent="space-between" p={2}>
-        <Typography variant="h5">Total Expenses Balance: </Typography>
-        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-          ₦{totalBalanceSum.toLocaleString()}
-        </Typography>
-      </Box>
-
-      <ExpensesDeleteDialog
+      <Block1DeleteDialog
         open={openDialog}
         onClose={handleCloseDialog}
-        onConfirm={handleDeleteRecord}
+        onConfirm={handleDeleteBlock1Entry}
         isBulkDelete={isBulkDelete}
       />
     </Box>
   );
 };
 
-export default Expenses;
+export default Block1;

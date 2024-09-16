@@ -1,5 +1,5 @@
 import { Box, Button, useTheme, Typography } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import React, { useEffect, useState } from "react";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
@@ -11,21 +11,25 @@ import {
   deleteSalesRecord,
   deleteAllSalesRecords,
 } from "../../services/SaleService";
-import SalesRecordForm from "../../components/SalesRecordForm";
+import SalesRecordForm from "../../components/Sales/SalesRecordForm";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import SalesDeleteDialog from "../../components/SalesDeleteDialog";
+import SalesDeleteDialog from "../../components/Sales/SalesDeleteDialog";
+import { useGridApiContext } from "@mui/x-data-grid";
+import { GridFilterModel } from "@mui/x-data-grid";
 
 const Sales = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [rows, setRows] = useState([]);
+  const [ filteredRows, setFilteredRows ] = useState([]);
   const [open, setOpen] = useState(false);
   const [totalBalanceSum, setTotalBalanceSum] = useState(0);
   const [editRecord, setEditRecord] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteRecord, setDeleteRecord] = useState(null);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
+  const [ isFiltered, setIsFiltered ] = useState(false);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -54,6 +58,7 @@ const Sales = () => {
           ...item,
         }));
         setRows(data);
+        setFilteredRows(data);
 
         getTotalBalanceSum()
           .then((response) => {
@@ -68,17 +73,42 @@ const Sales = () => {
       });
   }, []);
 
+  useEffect(() => {
+    console.log('Filtered Rows changed:', filteredRows);
+    console.log('Is Filtered:', isFiltered);
+
+    if (isFiltered) {
+      const filteredTotalBalance = filteredRows.reduce(
+        (sum, row) => sum + row.totalBalance,
+        0
+      );
+      console.log('Setting Filtered Total Balance:', filteredTotalBalance); 
+      setTotalBalanceSum(filteredTotalBalance);
+    } else {
+      getTotalBalanceSum(). then((response) => {
+        console.log('Total Balance from API:', response.data);
+        setTotalBalanceSum(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching total balance sum: ", error);
+        
+      })
+    }
+  }, [filteredRows, isFiltered]);
+
   const handleAddRecord = (newSalesRecord) => {
     setRows((prevRows) => {
       const updatedRows = [...prevRows, newSalesRecord];
 
-      getTotalBalanceSum()
+      if (!isFiltered) {
+        getTotalBalanceSum()
         .then((response) => {
           setTotalBalanceSum(response.data);
         })
         .catch((error) => {
           console.error("Error fetching total balance sum: ", error);
         });
+      }
       return updatedRows;
     });
   };
@@ -111,13 +141,16 @@ const Sales = () => {
           setRows((prevRows) =>
             prevRows.filter((row) => row.id !== deleteRecord)
           );
-          getTotalBalanceSum()
+
+          if (!isFiltered) {
+            getTotalBalanceSum()
             .then((response) => {
               setTotalBalanceSum(response.data);
             })
             .catch((error) => {
               console.error("Error fetching total balance sum: ", error);
             });
+          } 
           setDeleteRecord(null);
           setOpenDialog(false);
         })
@@ -135,17 +168,50 @@ const Sales = () => {
           : record
       );
 
-      getTotalBalanceSum()
+      if (!isFiltered) {
+        getTotalBalanceSum()
         .then((response) => {
           setTotalBalanceSum(response.data);
         })
         .catch((error) => {
           console.error("Error fetching total balance sum: ", error);
         });
-
-      console.log(updatedRecord);
+      }
+      
       return updatedRows;
     });
+  };
+
+  const handleFilterChange = (filterModel) => {
+    console.log('Filter Model:', filterModel);
+
+    const hasActiveFilters = filterModel.items.some((item) => item.value);
+
+    const filteredData = rows.filter((row) => {
+      return filterModel.items.every((item) => {
+        const columnField = item.field;
+        const columnValue = row[columnField];
+        console.log(`Filtering column: ${columnField}, Value: ${columnValue}`); 
+
+        return columnValue !== undefined && columnValue !== null && 
+        columnValue.toString().toLowerCase().includes(item.value.toLowerCase());
+      });
+    });
+
+    console.log("Filtered Rows: ", filteredData);
+    console.log('Has Active Filters:', hasActiveFilters);
+    
+    setFilteredRows(filteredData);
+    setIsFiltered(hasActiveFilters);
+
+    const filteredTotalBalance = filteredData.reduce(
+      (sum, row) => sum + row.totalBalance,
+      0
+    );
+
+    console.log("Filtered Total Balance: ", filteredTotalBalance);
+    
+    setTotalBalanceSum(filteredTotalBalance);
   };
 
   const columns = [
@@ -154,8 +220,13 @@ const Sales = () => {
     { field: "quantity", headerName: "Quantity", flex: 0.5 },
     { field: "rate", headerName: "Rate", flex: 0.5 },
     { field: "salesDesc", headerName: "Description", flex: 1 },
+    { field: "customerName", headerName: "Customer", flex: 0.5},
     { field: "date", headerName: "Date", flex: 0.5 },
-    { field: "totalBalance", headerName: "Total Balance", flex: 0.5 },
+    { field: "totalBalance",
+      headerName: "Total Balance", 
+      flex: 0.5,
+    },
+
     {
       field: "actions",
       headerName: "Actions",
@@ -279,15 +350,26 @@ const Sales = () => {
           "& .MuiCheckbox-root": {
             color: `${colors.greenAccent[100]} !important`,
           },
+          "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+            color: `${colors.gray[100]} !important`,
+            margin: "0 20px 20px 0",
+            fontSize: "14px"
+          },
         }}
       >
-        <DataGrid rows={rows} columns={columns} />
+        <DataGrid 
+          rows={filteredRows.length > 0 ? filteredRows : rows}
+          columns={columns}
+          autoHeight
+          slots={{ toolbar: GridToolbar }}
+          onFilterModelChange={handleFilterChange}
+        />
       </Box>
 
       <Box display="flex" justifyContent="space-between" p={2}>
         <Typography variant="h5">Total Sales Balance: </Typography>
         <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-          ₦{totalBalanceSum}
+          ₦{totalBalanceSum.toLocaleString()}
         </Typography>
       </Box>
 

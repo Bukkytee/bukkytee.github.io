@@ -2,9 +2,9 @@ import React from "react";
 import { Dialog, DialogContent, DialogTitle, DialogActions } from "@mui/material";
 import { Typography, Button } from "@mui/material";
 import { useTheme } from "@mui/material";
-import { tokens } from "../theme";
+import { tokens } from "../../theme";
 
-const SalesDeleteDialog =  ({ open, onClose, onConfirm, isBulkDelete = false }) => {
+const ExpensesDeleteDialog =  ({ open, onClose, onConfirm, isBulkDelete = false }) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     return (
@@ -15,14 +15,14 @@ const SalesDeleteDialog =  ({ open, onClose, onConfirm, isBulkDelete = false }) 
             fullWidth
         >
             <DialogTitle textAlign="center" variant="h3" margin="10px 0">
-                {isBulkDelete ? "Delete All Sales Record" : "Delete Sales Record"}
+                {isBulkDelete ? "Delete All Expenses Record" : "Delete Expenses Record"}
             </DialogTitle>
 
             <DialogContent>
                 <Typography variant="h5" textAlign="center" margin="10px 0">
                     { isBulkDelete
-                        ? "Do you want to delete all sales records? This action can't be undone once confirmed"
-                        : "Do you want to delete this sales record? This action can't be undone once confirmed"
+                        ? "Do you want to delete all expenses records? This action can't be undone once confirmed"
+                        : "Do you want to delete this expenses record? This action can't be undone once confirmed"
                     }
                 </Typography>
 
@@ -50,4 +50,4 @@ const SalesDeleteDialog =  ({ open, onClose, onConfirm, isBulkDelete = false }) 
     );
 };
 
-export default SalesDeleteDialog;
+export default ExpensesDeleteDialog;
