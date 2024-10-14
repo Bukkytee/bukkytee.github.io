@@ -1,161 +1,58 @@
-import { useTheme } from "@mui/material";
-import { ResponsiveBar } from "@nivo/bar";
-import { tokens } from "../theme";
-import { mockBarData as data } from "../data/mockData";
+// import React, { useEffect, useState } from "react";
+// import { BarChart } from "@mui/x-charts";
+// import { useTheme } from "@mui/material";
+// import { tokens } from "../theme";
+// import { getCementCurrentStock } from "../services/CementService";
+// import { getBlock1CurrentStock } from "../services/Block1Service";
+// import { getBlock2CurrentStock } from "../services/Block2Service";
 
-const BarChart = ({isDashboard = false}) => {
-    const theme = useTheme();
-    const colors = tokens(theme.palette.mode);
-    return (
-        <ResponsiveBar
-        data={data}
-        theme={{
-            // added
-        axis: {
-            domain: {
-              line: {
-                stroke: colors.gray[100],
-              },
-            },
-            legend: {
-              text: {
-                fill: colors.gray[100],
-              },
-            },
-            ticks: {
-              line: {
-                stroke: colors.gray[100],
-                strokeWidth: 1,
-              },
-              text: {
-                fill: colors.gray[100],
-              },
-            },
-          },
-          legends: {
-            text: {
-              fill: colors.gray[100],
-            },
-          },
-        }}
-        keys={[
-            'hot dog',
-            'burger',
-            'sandwich',
-            'kebab',
-            'fries',
-            'donut'
-        ]}
-        indexBy="country"
-        margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
-        padding={0.3}
-        valueScale={{ type: 'linear' }}
-        indexScale={{ type: 'band', round: true }}
-        colors={{ scheme: 'nivo' }}
-        defs={[
-            {
-                id: 'dots',
-                type: 'patternDots',
-                background: 'inherit',
-                color: '#38bcb2',
-                size: 4,
-                padding: 1,
-                stagger: true
-            },
-            {
-                id: 'lines',
-                type: 'patternLines',
-                background: 'inherit',
-                color: '#eed312',
-                rotation: -45,
-                lineWidth: 6,
-                spacing: 10
-            }
-        ]}
-        fill={[
-            {
-                match: {
-                    id: 'fries'
-                },
-                id: 'dots'
-            },
-            {
-                match: {
-                    id: 'sandwich'
-                },
-                id: 'lines'
-            }
-        ]}
-        borderColor={{
-            from: 'color',
-            modifiers: [
-                [
-                    'darker',
-                    1.6
-                ]
-            ]
-        }}
-        axisTop={null}
-        axisRight={null}
-        axisBottom={{
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
-            legend: isDashboard? undefined : 'country',
-            legendPosition: 'middle',
-            legendOffset: 32,
-            truncateTickAt: 0
-        }}
-        axisLeft={{
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
-            legend: isDashboard? undefined : 'food',
-            legendPosition: 'middle',
-            legendOffset: -40,
-            truncateTickAt: 0
-        }}
-        enableLabel={false}
-        labelSkipWidth={12}
-        labelSkipHeight={12}
-        labelTextColor={{
-            from: 'color',
-            modifiers: [
-                [
-                    'darker',
-                    1.6
-                ]
-            ]
-        }}
-        legends={[
-            {
-                dataFrom: 'keys',
-                anchor: 'bottom-right',
-                direction: 'column',
-                justify: false,
-                translateX: 120,
-                translateY: 0,
-                itemsSpacing: 2,
-                itemWidth: 100,
-                itemHeight: 20,
-                itemDirection: 'left-to-right',
-                itemOpacity: 0.85,
-                symbolSize: 20,
-                effects: [
-                    {
-                        on: 'hover',
-                        style: {
-                            itemOpacity: 1
-                        }
-                    }
-                ]
-            }
-        ]}
-        role="application"
-        ariaLabel="Nivo bar chart demo"
-        barAriaLabel={e=>e.id+": "+e.formattedValue+" in country: "+e.indexValue}
-    />
-    )
-}
+// const Bar = ({isDashboard = false}) => {
+//     const theme = useTheme();
+//     const colors = tokens(theme.palette.mode);
 
-export default BarChart;
+//     const [ currentStocks, setCurrentStocks ] = useState({ cement: 0, block1: 0, block2: 0 });
+
+//     useEffect(() => {
+//         const fetchStockData = async () => {
+//             try {
+//                 const [ cement, block1, block2 ] = await Promise.all([
+//                     getCementCurrentStock(),
+//                     getBlock1CurrentStock(),
+//                     getBlock2CurrentStock()
+//                 ]);
+
+//                 setCurrentStocks({
+//                     cement: cement.data,
+//                     block1: block1.data,
+//                     block2: block2.data
+//                 });
+//             } catch (error) {
+//                 console.error("Error fetching stock data: ", error);
+                
+//             }
+//         }
+
+//         fetchStockData();
+//     }, []);
+
+//     const data = [
+//         { name: "Cement", value: currentStocks.cement},
+//         { name: "Block1", value: currentStocks.block1},
+//         { name: "Block2", value: currentStocks.block2},
+//     ]
+
+//     return (
+//         <BarChart
+//             series={[{ 
+//                 data: data.map(item => ({ x: item.value, y: item.value })),
+//                 color: colors.primary[500]
+//              }]}
+//             height={600}
+//             xAxis={[{ data: data.map(item => item.name), scaleType: 'band' }]}
+//             yAxis={[{ tickInterval: 200 }]}
+//             margin={{ top: 35, bottom: 30, left: 40, right: 10 }}
+//         />
+//     );
+// }
+
+// export default Bar;

@@ -8,6 +8,7 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import { listCementEntries, getCementEntry, deleteCementEntry, deleteAllCementEntries, updateCementEntry } from "../../services/CementService";
 import CementForm from "./CementForm";
 import CementDeleteDialog from "./CementDeleteDialog";
+import { isAdmin } from "../../services/UserService";
 
 const Cement = () => {
   const theme = useTheme();
@@ -18,6 +19,8 @@ const Cement = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteCement, setDeleteCement] = useState(null);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
+
+  const admin = isAdmin();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -127,46 +130,49 @@ const Cement = () => {
     { field: "description", headerName: "Description", flex: 1 },
     { field: "inQuantity", headerName: "In", flex: 0.5 },
     { field: "outQuantity", headerName: "Out", flex: 0.5 },
-    { field: "currentStock", headerName: "Balance (Current Stock)", flex: 0.75 },
-    {
-      field: "actions",
-      headerName: "Actions",
-      headerAlign: "center",
-      flex: 1,
-      renderCell: (params) => (
-        <Box display="flex" justifyContent="space-evenly" margin="10px 0">
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: colors.greenAccent[600],
-              "&:hover": {
-                backgroundColor: "transparent",
-                borderColor: colors.greenAccent[400],
-                color: colors.greenAccent[300],
-              },
-            }}
-              onClick={() => handleEditCementEntry(params.row)}
-          >
-            <EditOutlinedIcon sx={{ mr: "10px" }} /> Edit
-          </Button>
+    { field: "currentStock", headerName: "Balance (Current Stock)", flex: 0.5 },
+    ...(admin ? [
+      {
+        field: "actions",
+        headerName: "Actions",
+        headerAlign: "center",
+        flex: 1,
+        renderCell: (params) => (
+          <Box display="flex" justifyContent="space-evenly" margin="10px 0">
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: colors.greenAccent[600],
+                "&:hover": {
+                  backgroundColor: "transparent",
+                  borderColor: colors.greenAccent[400],
+                  color: colors.greenAccent[300],
+                },
+              }}
+                onClick={() => handleEditCementEntry(params.row)}
+            >
+              <EditOutlinedIcon sx={{ mr: "10px" }} /> Edit
+            </Button>
+  
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: colors.redAccent[600],
+                "&:hover": {
+                  backgroundColor: "transparent",
+                  borderColor: colors.redAccent[400],
+                  color: colors.redAccent[300],
+                },
+              }}
+                onClick={() => handleOpenDialog(params.row.id)}
+            >
+              <DeleteOutlinedIcon sx={{ mr: "10px" }} /> Delete
+            </Button>
+          </Box>
+        ),
+      },
+    ] : [])
 
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: colors.redAccent[600],
-              "&:hover": {
-                backgroundColor: "transparent",
-                borderColor: colors.redAccent[400],
-                color: colors.redAccent[300],
-              },
-            }}
-              onClick={() => handleOpenDialog(params.row.id)}
-          >
-            <DeleteOutlinedIcon sx={{ mr: "10px" }} /> Delete
-          </Button>
-        </Box>
-      ),
-    },
   ];
 
   return (
@@ -191,24 +197,26 @@ const Cement = () => {
           Add Entry
         </Button>
 
-        <Button
-          sx={{
-            backgroundColor: colors.redAccent[600],
-            color: colors.gray[100],
-            fontSize: "14px",
-            fontWeight: "bold",
-            padding: "10px 20px",
-            margin: "10px 20px",
-            float: "right",
-            "&:hover": {
-              backgroundColor: colors.redAccent[700],
-            },
-          }}
-          onClick={() => handleOpenDialog(null)}
-        >
-          <DeleteOutlinedIcon sx={{ mr: "10px" }} />
-          Delete All Entries
-        </Button>
+        {admin && (
+                  <Button
+                  sx={{
+                    backgroundColor: colors.redAccent[600],
+                    color: colors.gray[100],
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    padding: "10px 20px",
+                    margin: "10px 20px",
+                    float: "right",
+                    "&:hover": {
+                      backgroundColor: colors.redAccent[700],
+                    },
+                  }}
+                  onClick={() => handleOpenDialog(null)}
+                >
+                  <DeleteOutlinedIcon sx={{ mr: "10px" }} />
+                  Delete All Entries
+                </Button>
+          )}
 
         <CementForm
           open={open}

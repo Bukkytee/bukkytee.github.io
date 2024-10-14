@@ -1,15 +1,15 @@
 import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
-import { mockTransactions } from "../../data/mockData";
+// import { mockTransactions } from "../../data/mockData";
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
+// import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import LineChart from "../../components/LineChart";
-import BarChart from "../../components/BarChart";
+// import BarChart from "../../components/BarChart";
 import PieChart from "../../components/PieChart";
 import StatBox from "../../components/StatBox";
-import ProgressCircle from "../../components/ProgressCircle";
+// import ProgressCircle from "../../components/ProgressCircle";
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import { useState, useEffect } from "react";
@@ -50,7 +50,7 @@ const Dashboard = () => {
       const fetchMonthlyExpenses = async () => {
         try {
           const response = await getTotalMonthlyExpenses(currentMonth, currentYear);
-          setMonthlyExpenses(response.data)
+          setMonthlyExpenses(response.data);
         } catch (error) {
           console.error("Error fetching monthly data: ", error);
         } finally {
@@ -277,8 +277,8 @@ const Dashboard = () => {
                   >
                     {transaction.id}
                   </Typography>
-                  <Typography color={colors.gray[100]}>
-                    {transaction.user}
+                  <Typography color={colors.gray[100]} margin="5px 0">
+                    {transaction.customerName}
                   </Typography>
                 </Box>
                 <Box color={colors.gray[100]}>{transaction.date}</Box>
@@ -320,7 +320,7 @@ const Dashboard = () => {
               <Typography>Includes extra misc expenditures and costs</Typography>
             </Box>
           </Box> */}
-          <Box
+          {/* <Box
             gridColumn="span 6"
             gridRow="span 2"
             backgroundColor={colors.primary[400]}
@@ -335,9 +335,9 @@ const Dashboard = () => {
             <Box height="250px" mt="-20px">
               <BarChart isDashboard={true} />
             </Box>
-          </Box>
+          </Box> */}
           <Box
-            gridColumn="span 6"
+            gridColumn="span 12"
             gridRow="span 2"
             backgroundColor={colors.primary[400]}
           >

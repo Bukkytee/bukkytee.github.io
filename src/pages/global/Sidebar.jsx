@@ -2,19 +2,20 @@ import { useEffect, useState } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import 'react-pro-sidebar/dist/css/styles.css';
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
-import {Link, useLocation} from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import { tokens } from "../../theme";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
 import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
-import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
+// import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import PieChartOutlineOutlinedIcon from "@mui/icons-material/PieChartOutlineOutlined";
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import { getYourProfile, isAdmin } from "../../services/UserService";
 // import { Home } from "@mui/icons-material";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
@@ -38,11 +39,37 @@ const Sidebar = ({ isCollapsed, onCollapseToggle }) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const location = useLocation();
+    const navigate = useNavigate();
     const [selected, setSelected] = useState("");
+    const [userInfo, setUserInfo] = useState({ fullName: "", role: "" });
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            navigate("/login")
+        } else {
+            const fetchUserInfo = async () => {
+                try {
+                    const response = await getYourProfile();
+
+                    if (response && response.data) {
+                        setUserInfo({ fullName: response.data.fullName, role: response.data.role });
+                    } else {
+                        console.error("User info not found");
+                    }
+
+                } catch (error) {
+                    console.error("Failed to fetch user info:", error);
+                }
+            };
+            fetchUserInfo();
+        }
+    }, [navigate])
 
     useEffect(() => {
         switch(location.pathname) {
-            case "/":
+            case "/dashboard":
                 setSelected("Dashboard");
                 break;
             case "/sales":
@@ -63,9 +90,9 @@ const Sidebar = ({ isCollapsed, onCollapseToggle }) => {
             case "/inventory":
                 setSelected("Inventory");
                 break;
-            case "/analytics":
-                setSelected("Analytics");
-                break;
+            // case "/analytics":
+            //     setSelected("Analytics");
+            //     break;
             case "/pie":
                 setSelected("Pie Chart");
                 break;
@@ -149,11 +176,16 @@ const Sidebar = ({ isCollapsed, onCollapseToggle }) => {
                                     color={colors.gray[100]}
                                     fontWeight="bold"
                                     mt="15px"
-                                    >User</Typography>
+                                >
+                                    {userInfo.fullName || "User"}
+                                </Typography>
                                 <Typography
                                     variant="h5"
                                     color={colors.greenAccent[500]}
-                                    >Employee</Typography>
+                                    marginTop="10px"
+                                >
+                                    {userInfo.role || "Employee"}
+                                </Typography>
                             </Box>
                         </Box>
                     )}
@@ -162,7 +194,7 @@ const Sidebar = ({ isCollapsed, onCollapseToggle }) => {
                     <Box paddingLeft={isCollapsed ? undefined : "10%"}>
                         <Item
                             title="Dashboard"
-                            to="/"
+                            to="/dashboard"
                             icon={<HomeOutlinedIcon/>}
                             selected = {selected}
                             setSelected = {setSelected}
@@ -200,15 +232,27 @@ const Sidebar = ({ isCollapsed, onCollapseToggle }) => {
                             m="15px 0 5px 20px"
                             >Manage</Typography>
                         )}
+                    {userInfo.role === "ADMIN" && (
+                        <>
+                            <Item
+                                title="Users"
+                                to="/users"
+                                icon={<PeopleOutlinedIcon/>}
+                                selected = {selected}
+                                setSelected = {setSelected}
+                            />
 
-                        <Item
-                            title="Users"
-                            to="/users"
-                            icon={<PeopleOutlinedIcon/>}
-                            selected = {selected}
-                            setSelected = {setSelected}
-                        />
-  
+                            <Item
+                                title="Customers"
+                                to="/customers"
+                                icon={<ContactsOutlinedIcon/>}
+                                selected = {selected}
+                                setSelected = {setSelected}
+                            />
+                        </>
+
+                    )}
+                        
 
                         <Item
                             title="Profile"
@@ -218,13 +262,7 @@ const Sidebar = ({ isCollapsed, onCollapseToggle }) => {
                             setSelected = {setSelected}
                         />
 
-                        <Item
-                            title="Customers"
-                            to="/customers"
-                            icon={<ContactsOutlinedIcon/>}
-                            selected = {selected}
-                            setSelected = {setSelected}
-                        />
+
                         
                         <Item
                             title="Inventory"
@@ -242,13 +280,13 @@ const Sidebar = ({ isCollapsed, onCollapseToggle }) => {
                             >Reports</Typography> 
                         )}    
 
-                        <Item
+                        {/* <Item
                             title="Analytics"
                             to="/analytics"
                             icon={<BarChartOutlinedIcon/>}
                             selected = {selected}
                             setSelected = {setSelected}
-                        />
+                        /> */}
 
                         <Item
                             title="Pie Chart"

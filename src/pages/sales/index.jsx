@@ -17,6 +17,7 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import SalesDeleteDialog from "../../components/Sales/SalesDeleteDialog";
 import { useGridApiContext } from "@mui/x-data-grid";
 import { GridFilterModel } from "@mui/x-data-grid";
+import { isAdmin } from "../../services/UserService";
 
 const Sales = () => {
   const theme = useTheme();
@@ -30,6 +31,8 @@ const Sales = () => {
   const [deleteRecord, setDeleteRecord] = useState(null);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [ isFiltered, setIsFiltered ] = useState(false);
+
+  const admin = isAdmin();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -52,13 +55,17 @@ const Sales = () => {
 
   useEffect(() => {
     listSalesRecord()
-      .then((response) => {
+    .then((response) => {
+      if (Array.isArray(response.data)) {
         const data = response.data.map((item) => ({
           id: item.id,
           ...item,
         }));
         setRows(data);
         setFilteredRows(data);
+      } else {
+        console.error("Unexpected response data format: ", response.data);
+      }
 
         getTotalBalanceSum()
           .then((response) => {
@@ -85,7 +92,7 @@ const Sales = () => {
       console.log('Setting Filtered Total Balance:', filteredTotalBalance); 
       setTotalBalanceSum(filteredTotalBalance);
     } else {
-      getTotalBalanceSum(). then((response) => {
+      getTotalBalanceSum().then((response) => {
         console.log('Total Balance from API:', response.data);
         setTotalBalanceSum(response.data);
       })
@@ -226,46 +233,47 @@ const Sales = () => {
       headerName: "Total Balance", 
       flex: 0.5,
     },
-
-    {
-      field: "actions",
-      headerName: "Actions",
-      headerAlign: "center",
-      flex: 1,
-      renderCell: (params) => (
-        <Box display="flex" justifyContent="space-evenly" margin="10px 0">
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: colors.greenAccent[600],
-              "&:hover": {
-                backgroundColor: "transparent",
-                borderColor: colors.greenAccent[400],
-                color: colors.greenAccent[300],
-              },
-            }}
-            onClick={() => handleEditRecord(params.row)}
-          >
-            <EditOutlinedIcon sx={{ mr: "10px" }} /> Edit
-          </Button>
-
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: colors.redAccent[600],
-              "&:hover": {
-                backgroundColor: "transparent",
-                borderColor: colors.redAccent[400],
-                color: colors.redAccent[300],
-              },
-            }}
-            onClick={() => handleOpenDialog(params.row.id)}
-          >
-            <DeleteOutlinedIcon sx={{ mr: "10px" }} /> Delete
-          </Button>
-        </Box>
-      ),
-    },
+    ...(admin ? [
+      {
+        field: "actions",
+        headerName: "Actions",
+        headerAlign: "center",
+        flex: 1,
+        renderCell: (params) => (
+          <Box display="flex" justifyContent="space-evenly" margin="10px 0">
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: colors.greenAccent[600],
+                "&:hover": {
+                  backgroundColor: "transparent",
+                  borderColor: colors.greenAccent[400],
+                  color: colors.greenAccent[300],
+                },
+              }}
+              onClick={() => handleEditRecord(params.row)}
+            >
+              <EditOutlinedIcon sx={{ mr: "10px" }} /> Edit
+            </Button>
+  
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: colors.redAccent[600],
+                "&:hover": {
+                  backgroundColor: "transparent",
+                  borderColor: colors.redAccent[400],
+                  color: colors.redAccent[300],
+                },
+              }}
+              onClick={() => handleOpenDialog(params.row.id)}
+            >
+              <DeleteOutlinedIcon sx={{ mr: "10px" }} /> Delete
+            </Button>
+          </Box>
+        ),
+      }
+    ] : []) 
   ];
 
   return (
@@ -289,25 +297,28 @@ const Sales = () => {
           <AddOutlinedIcon sx={{ mr: "10px" }} />
           Add Record
         </Button>
+          {admin && (
+                    <Button
+                    sx={{
+                      backgroundColor: colors.redAccent[600],
+                      color: colors.gray[100],
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                      padding: "10px 20px",
+                      margin: "10px 20px",
+                      float: "right",
+                      "&:hover": {
+                        backgroundColor: colors.redAccent[700],
+                      },
+                    }}
+                    onClick={() => handleOpenDialog(null)}
+                  >
+                    <DeleteOutlinedIcon sx={{ mr: "10px" }} />
+                    Delete All Records
+                  </Button>
+          )}
 
-        <Button
-          sx={{
-            backgroundColor: colors.redAccent[600],
-            color: colors.gray[100],
-            fontSize: "14px",
-            fontWeight: "bold",
-            padding: "10px 20px",
-            margin: "10px 20px",
-            float: "right",
-            "&:hover": {
-              backgroundColor: colors.redAccent[700],
-            },
-          }}
-          onClick={() => handleOpenDialog(null)}
-        >
-          <DeleteOutlinedIcon sx={{ mr: "10px" }} />
-          Delete All Records
-        </Button>
+        
         <SalesRecordForm
           open={open}
           handleClose={handleClose}

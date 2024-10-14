@@ -15,6 +15,7 @@ import ExpensesRecordForm from "../../components/Expenses/ExpensesRecordForm";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import ExpensesDeleteDialog from "../../components/Expenses/ExpensesDeleteDialog";
+import { isAdmin } from "../../services/UserService";
 
 const Expenses = () => {
   const theme = useTheme();
@@ -26,6 +27,8 @@ const Expenses = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteRecord, setDeleteRecord] = useState(null);
   const [isBulkDelete, setIsBulkDelete] = useState(false);
+
+  const admin = isAdmin();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -157,45 +160,48 @@ const Expenses = () => {
     { field: "supplierName", headerName: "Supplier", flex: 0.5 },
     { field: "date", headerName: "Date", flex: 0.5 },
     { field: "totalBalance", headerName: "Total Balance", flex: 0.75 },
-    {
-      field: "actions",
-      headerName: "Actions",
-      headerAlign: "center",
-      flex: 1,
-      renderCell: (params) => (
-        <Box display="flex" justifyContent="space-evenly" margin="10px 0">
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: colors.greenAccent[600],
-              "&:hover": {
-                backgroundColor: "transparent",
-                borderColor: colors.greenAccent[400],
-                color: colors.greenAccent[300],
-              },
-            }}
-            onClick={() => handleEditRecord(params.row)}
-          >
-            <EditOutlinedIcon sx={{ mr: "10px" }} /> Edit
-          </Button>
+    ...(admin ? [
+        {
+          field: "actions",
+          headerName: "Actions",
+          headerAlign: "center",
+          flex: 1,
+          renderCell: (params) => (
+            <Box display="flex" justifyContent="space-evenly" margin="10px 0">
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: colors.greenAccent[600],
+                  "&:hover": {
+                    backgroundColor: "transparent",
+                    borderColor: colors.greenAccent[400],
+                    color: colors.greenAccent[300],
+                  },
+                }}
+                onClick={() => handleEditRecord(params.row)}
+              >
+                <EditOutlinedIcon sx={{ mr: "10px" }} /> Edit
+              </Button>
+    
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: colors.redAccent[600],
+                  "&:hover": {
+                    backgroundColor: "transparent",
+                    borderColor: colors.redAccent[400],
+                    color: colors.redAccent[300],
+                  },
+                }}
+                onClick={() => handleOpenDialog(params.row.id)}
+              >
+                <DeleteOutlinedIcon sx={{ mr: "10px" }} /> Delete
+              </Button>
+            </Box>
+          ),
+        },
+    ] : [])
 
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: colors.redAccent[600],
-              "&:hover": {
-                backgroundColor: "transparent",
-                borderColor: colors.redAccent[400],
-                color: colors.redAccent[300],
-              },
-            }}
-            onClick={() => handleOpenDialog(params.row.id)}
-          >
-            <DeleteOutlinedIcon sx={{ mr: "10px" }} /> Delete
-          </Button>
-        </Box>
-      ),
-    },
   ];
 
   return (
@@ -219,25 +225,27 @@ const Expenses = () => {
           <AddOutlinedIcon sx={{ mr: "10px" }} />
           Add Record
         </Button>
+          {admin && (
+                  <Button
+                  sx={{
+                    backgroundColor: colors.redAccent[600],
+                    color: colors.gray[100],
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    padding: "10px 20px",
+                    margin: "10px 20px",
+                    float: "right",
+                    "&:hover": {
+                      backgroundColor: colors.redAccent[700],
+                    },
+                  }}
+                  onClick={() => handleOpenDialog(null)}
+                >
+                  <DeleteOutlinedIcon sx={{ mr: "10px" }} />
+                  Delete All Records
+                </Button>
+          )}
 
-        <Button
-          sx={{
-            backgroundColor: colors.redAccent[600],
-            color: colors.gray[100],
-            fontSize: "14px",
-            fontWeight: "bold",
-            padding: "10px 20px",
-            margin: "10px 20px",
-            float: "right",
-            "&:hover": {
-              backgroundColor: colors.redAccent[700],
-            },
-          }}
-          onClick={() => handleOpenDialog(null)}
-        >
-          <DeleteOutlinedIcon sx={{ mr: "10px" }} />
-          Delete All Records
-        </Button>
         <ExpensesRecordForm
           open={open}
           handleClose={handleClose}

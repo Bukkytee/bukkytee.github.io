@@ -6,6 +6,7 @@ import Header from "../../components/Header";
 import Block1 from "../../components/Block1/Block1";
 import Block2 from "../../components/Block2/Block2";
 import Cement from "../../components/Cement/Cement";
+import Product from "../../components/Product/Product";
 
 const Inventory = () => {
   const theme = useTheme();
@@ -33,6 +34,7 @@ const Inventory = () => {
           textColor="primary"
           indicatorColor="primary"
         >
+          <Tab label="Product"></Tab>
           <Tab label="Cement" />
           <Tab label='Block (9" inches)' />
           <Tab label='Block (6" inches)' />
@@ -41,12 +43,15 @@ const Inventory = () => {
 
       <Box m="20px 0">
         <TabPanel value={activeTab} index={0}>
-          <Cement />
+          <Product />
         </TabPanel>
         <TabPanel value={activeTab} index={1}>
-          <Block1 />
+          <Cement />
         </TabPanel>
         <TabPanel value={activeTab} index={2}>
+          <Block1 />
+        </TabPanel>
+        <TabPanel value={activeTab} index={3}>
           <Block2 />
         </TabPanel>
       </Box>

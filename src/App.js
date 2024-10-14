@@ -1,19 +1,21 @@
 import { ColorModeContext, useMode } from "./theme";
 import { useState } from "react";
 import { CssBaseline, ThemeProvider, Box } from "@mui/material";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Topbar from "./pages/global/Topbar";
 import Sidebar from "./pages/global/Sidebar";
 import Dashboard from "./pages/dashboard";
 import Sales from "./pages/sales";
 import Expenses from "./pages/expenses";
 import Users from "./pages/users";
-import Profile from "./pages/profile";
-import Customers from "./pages/customers";
 import Inventory from "./pages/inventory";
-import Analytics from "./pages/analytics";
 import Pie from "./pages/pie";
 import Line from "./pages/line";
+import LoginPage from "./components/auth/LoginPage";
+import UserProfile from "./components/User/UserProfile";
+import PrivateRoute from "./components/auth/PrivateRoute"; // Import PrivateRoute
+import { adminOnly, isAuthenticated } from "./services/UserService";
+// import PasswordResetForm from "./components/auth/PasswordResetPage";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -23,42 +25,34 @@ function App() {
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <div className="app">
-          <Box
-            width={ isSidebarCollapsed ? "80px" : "280px" }
-            transition="width 0.3s ease-in-out"
-          >
-            <Sidebar
-              isCollapsed={isSidebarCollapsed}
-              onCollapseToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            />
-          </Box>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* <Route path="/reset-password" element={<PasswordResetForm />} /> */}
+
+
+          <Route path="/" element={<Navigate to={isAuthenticated() ? "/dashboard" : "/login"} />} />
+
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+
+          <Route path="/sales" element={<PrivateRoute><Sales /></PrivateRoute>} />
+
+          <Route path="/expenses" element={<PrivateRoute><Expenses /></PrivateRoute>} />
+
+          {adminOnly() && (
+            <Route path="/users" element={<PrivateRoute><Users /></PrivateRoute>} />
+          )}
+
+          <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+
+          <Route path="/inventory" element={<PrivateRoute><Inventory /></PrivateRoute>} />
+
+          <Route path="/pie" element={<PrivateRoute><Pie /></PrivateRoute>} />
+
+          <Route path="/line" element={<PrivateRoute><Line /></PrivateRoute>} />
           
-          <Box
-            flexGrow={1}
-            overflow="hidden"
-            transition= "width 0.3s ease-in-out"
-            sx={{
-              scale: "0.99"
-            }}
-          >
-            <main className="content">
-              <Topbar />
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/sales" element={<Sales />} />
-                <Route path="/expenses" element={<Expenses />} />
-                <Route path="/users" element={<Users />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/customers" element={<Customers />} />
-                <Route path="/inventory" element={<Inventory />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/pie" element={<Pie />} />
-                <Route path="/line" element={<Line />} />
-              </Routes>
-            </main>
-          </Box> 
-        </div>
+          <Route path="*" element={<Navigate to="/dashboard" />} />
+        </Routes>
       </ThemeProvider>
     </ColorModeContext.Provider>
   );
